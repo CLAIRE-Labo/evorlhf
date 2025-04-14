@@ -111,8 +111,36 @@ def evaluate_func(cfg, dataset_name, function_class) -> FunctionClass:
     return function_class
 
 
-append_prompt = ""
-system_prompt = ""
+append_prompt = """
+You are tasked with discovering a new function, heuristic_reward(), that closely approximates the behavior of the learned reward model while being significantly simpler and more interpretable.
+
+To achieve this, follow these guidelines:
+
+1. Understand the True Reward Model
+   - The true reward model is a complex function learned through reinforcement learning from human feedback (RLHF).  
+   - Your goal is to uncover a simpler heuristic that captures its core principles without unnecessary complexity.
+
+2. Optimize for Fidelity
+   - Your heuristic should produce rewards that are as close as possible to the true reward model.  
+   - The performance of your heuristic will be evaluated based on how well it minimizes the expected difference from the true reward model across a variety of inputs.
+
+3. Prioritize Simplicity and Interpretability
+   - Avoid overfitting to small variations—aim for a general rule that explains most of the reward function’s behavior.  
+   - Prefer human-readable mathematical expressions with fewer terms and operations.  
+
+4. Think Creatively
+   - Do not simply copy or rephrase parts of the learned reward model.  
+   - Look for underlying patterns or principles that define the reward function and express them in a simpler form.
+
+5. Experiment and Improve
+   - Analyze past attempts: what features contributed most to performance?  
+   - Try new variations and optimizations that improve accuracy while keeping the heuristic simple.  
+   - Your goal is to iteratively refine heuristic_reward() until it consistently achieves high alignment with the true reward model.
+
+To summarize, your task is to write a new function named heuristic_reward() that approximates the learned reward model with minimal complexity while maintaining high accuracy. Your success will be measured by how well it generalizes across different inputs while remaining interpretable.
+"""
+system_prompt = "You are helpful, excellent and innovative problem solver specializing in mathematical optimization and algorithm design. You are an expert in writing Python functions."
+
 
 TASK_REGISTRY.register(
     "rlhf",

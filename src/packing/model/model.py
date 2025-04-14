@@ -1,5 +1,5 @@
 import requests
-from transformers import AutoTokenizer, AutoModelForCausalLM, GenerationConfig
+from transformers import AutoModelForSequenceClassification, AutoTokenizer, AutoModelForCausalLM, GenerationConfig
 import torch
 
 from datasets import load_dataset, Dataset
@@ -11,7 +11,6 @@ from packing.utils.functions import (
     function_to_string,
 )
 
-from transformers import AutoModelForCausalLM, AutoTokenizer
 from peft import PeftModel, get_peft_model, LoraConfig
 import torch.cuda
 import torch.distributed
@@ -33,6 +32,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from packing.utils.vllm import dict_to_namespace
 
+NOT_CAUSAL_LM_MODELS = ["RLHFlow/ArmoRM-Llama3-8B-v0.1"]
 
 def get_full_model_name(cfg):
     def get_name(name):
@@ -136,8 +136,9 @@ def initialize_single_model(
 
     if cfg.flash_attn:
         init_args["attn_implementation"] = "flash_attention_2"
-
-    model = AutoModelForCausalLM.from_pretrained(full_model_name, **init_args)
+        
+    hugging_face_model_class = AutoModelForSequenceClassification if full_model_name in NOT_CAUSAL_LM_MODELS else AutoModelForCausalLM
+    model = hugging_face_model_class.from_pretrained(full_model_name, **init_args)
     # model.hf_device_map
 
     logging.info(f"Loaded model {full_model_name} on GPU {model.device.index}")
@@ -145,10 +146,10 @@ def initialize_single_model(
     if load_finetuned:
         # Load the finetuned model for inference.
         logging.info(f"Using the finetuned model from {model_adapter_dir}")
-        model = AutoModelForCausalLM.from_pretrained(model_adapter_dir, **init_args)
+        model = hugging_face_model_class.from_pretrained(model_adapter_dir, **init_args)
     else:
         # Initialize the Huggingface model for training or inference
-        model = AutoModelForCausalLM.from_pretrained(full_model_name, **init_args)
+        model = hugging_face_model_class.from_pretrained(full_model_name, **init_args)
         logging.info("Not using a finetuned model")
 
     tokenizer = AutoTokenizer.from_pretrained(full_model_name)
