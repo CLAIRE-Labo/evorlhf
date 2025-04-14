@@ -1,0 +1,30 @@
+hatchling # To build the package without isolation in edit mode for faster startup.
+editables # Same as above.
+hydra-core
+tqdm
+wandb
+pre-commit
+black
+accelerate
+transformers
+bitsandbytes
+datasets
+galois
+huggingface-hub
+jupyterlab
+llvmlite
+matplotlib
+matplotlib-inline
+more-itertools
+networkx
+opencv-python
+omegaconf
+opencv
+packaging
+pandas
+peft
+scikit-learn
+scipy
+elkai
+numpy
+torch
