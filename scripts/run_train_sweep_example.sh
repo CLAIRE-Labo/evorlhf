@@ -46,9 +46,14 @@ tail -n +2 "$SWEEP_FILE" | while IFS= read -r line || [[ -n "$line" ]]; do
     job_name=$(echo "$job_name" | tr -d '.')
 
     echo "Submitting job $job_name"
-    echo "Command: PYTHONPATH=src python src/experiments/main.py ${cli_args}wandb=1 gpu_nums=0 prefix=${prefix} cluster=rcp run_or_dev=${run_or_dev}"
+    echo "Command: PYTHONPATH=src python src/experiments/main.py ${cli_args}wandb=1 gpu_nums=0 prefix=${prefix} cluster=cscs run_or_dev=${run_or_dev}"
 
     # TODO: Add your logic here to launch the command (i.e. sbatch or runai submit, depending on your cluster)
+
+    # Example for SLURM:
+    # sbatch --job-name="$job_name" --output="logs/${job_name}.out" --error="logs/${job_name}.err" \
+    #     --wrap="PYTHONPATH=src python src/experiments/main.py ${cli_args}wandb=1 gpu_nums=0 prefix=${prefix} cluster=${cluster} run_or_dev=${run_or_dev}"
+
 
 done < <(tail -n +2 "$SWEEP_FILE")
 
