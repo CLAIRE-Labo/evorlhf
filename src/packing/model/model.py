@@ -1,5 +1,5 @@
 import requests
-from transformers import AutoModelForSequenceClassification, AutoTokenizer, AutoModelForCausalLM, GenerationConfig
+from transformers import AutoTokenizer, AutoModelForCausalLM, GenerationConfig
 import torch
 
 from datasets import load_dataset, Dataset
@@ -31,8 +31,6 @@ from huggingface_hub import InferenceClient
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from packing.utils.vllm import dict_to_namespace
-
-NOT_CAUSAL_LM_MODELS = ["RLHFlow/ArmoRM-Llama3-8B-v0.1"]
 
 def get_full_model_name(cfg):
     def get_name(name):
@@ -85,7 +83,7 @@ def get_full_model_name(cfg):
             # huggingface-cli download microsoft/Phi-3.5-mini-instruct --local-dir Phi-3.5-mini-instruct
         elif name == "starcoder":
             model_id = "bigcode/starcoder2-15b-instruct-v0.1"
-        elif name == "ArmorRM":
+        elif name == "ArmorRM": # TODO: check if i have to add it?
             model_id = "RLHFlow/ArmoRM-Llama3-8B-v0.1"
         # elif name == "gemma":
         #     model_id = "google/gemma-7b-it"
@@ -139,7 +137,7 @@ def initialize_single_model(
     if cfg.flash_attn:
         init_args["attn_implementation"] = "flash_attention_2"
 
-    hugging_face_model_class = AutoModelForSequenceClassification if full_model_name in NOT_CAUSAL_LM_MODELS else AutoModelForCausalLM
+    hugging_face_model_class = AutoModelForCausalLM
     model = hugging_face_model_class.from_pretrained(full_model_name, **init_args)
     # model.hf_device_map
 

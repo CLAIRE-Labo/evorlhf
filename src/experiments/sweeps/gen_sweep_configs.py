@@ -2,7 +2,7 @@ import csv
 
 seeds = range(0, 1)
 train_types = ['dpo', 'none']
-models = ['ArmorRM']
+models = ['llama32']
 learning_rates = [1e-5, 1e-4]
 task = ['rlhf']
 
