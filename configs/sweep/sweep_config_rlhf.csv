@@ -1,5 +1,2 @@
-seed,train,model,train.dpo_config.learning_rate
-0,dpo,llama32,1e-05
-0,dpo,llama32,0.0001
-0,none,llama32,1e-05
-0,none,llama32,0.0001
+seed|train|model|task|num_rounds|project
+0|none|qwensmall|rlhf|11001|evorlhf

@@ -1,9 +1,9 @@
 import csv
 
 seeds = range(0, 1)
-train_types = ['dpo', 'none']
+train_types = ['none']
 models = ['llama32']
-learning_rates = [1e-5, 1e-4]
+learning_rates = [1e-5]
 task = ['rlhf']
 
 if __name__ == '__main__':
@@ -15,7 +15,7 @@ if __name__ == '__main__':
         for learning_rate in learning_rates
     ]
 
-    with open("../../../configs/sweep/sweep_config_rlhf.csv", "w", newline="\n") as f:
+    with open("configs/sweep/sweep_config_rlhf.csv", "w", newline="\n") as f:
         writer = csv.writer(f)
         # Write header
         writer.writerow(["seed", "train", "model", "train.dpo_config.learning_rate"])

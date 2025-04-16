@@ -69,6 +69,7 @@ class FunctionClass:
     score: float = float("NaN")
     true_score: int = float("NaN")
     original_score: int = float("NaN")
+    p_value: float = float("NaN")
     fail_flag: int = -1 # Only measures if the function failed or not
     correct_flag: int = 0 
     chat: list[dict] = field(default_factory=list)

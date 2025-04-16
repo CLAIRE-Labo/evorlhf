@@ -1,9 +1,9 @@
 # Task flatpack
-task_name: "rlhf"
-function_str_to_extract: "priority"
-train_set_path: "data/rlhf/train_rlhf.json"  # Make sure you're running from the project root
-train_perturbed_set_path: "data/rlhf/train_perturbed_rlhf.json"
-test_set_path: "data/rlhf/test_rlhf.json"
+task_name: "evorlhf"
+function_str_to_extract: "heuristic_rm"
+train_set_path: "data/train_rlhf.json"  # Make sure you're running from the project root
+train_perturbed_set_path: "data/train_perturbed_rlhf.json"
+test_set_path: "data/test_rlhf.json"
 init_equal: 1
 
 failed_score: -20000

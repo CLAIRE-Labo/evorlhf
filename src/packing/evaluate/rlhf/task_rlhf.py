@@ -5,6 +5,7 @@ import logging
 import random
 import copy
 import traceback
+from datasets import load_dataset
 from packing.logging.function_class import FunctionClass
 from scipy.stats import kendalltau
 from packing.evaluate.registry import TASK_REGISTRY
@@ -42,9 +43,9 @@ def get_initial_func(cfg) -> Tuple[Callable, str]:
 # Function to create the input.
 def generate_input(cfg, set: str) -> str:
     if set == "train":
-        return "Dataset name"
+        return "Magpie-Align/Magpie-Air-DPO-100K-v0.1"
     elif set == "testset":
-        return "Testset name"
+        return "Magpie-Align/Magpie-Air-DPO-100K-v0.1"
     else:
         raise ValueError(f"Unknown set: {set}")
 
@@ -53,17 +54,28 @@ def get_model_scores(model, generations):
     """Return a list of scores given a model and a list of generations."""
     return [model(generation) for generation in generations]
 
-def evaluate_kendall_correlation(true_rm, heuristic, train_data, sample_size=100, seed=42):
-    sampled_generations = random.sample(train_data, sample_size)
-    true_rm_scores = get_model_scores(true_rm, sampled_generations)
-    heuristic_scores = get_model_scores(heuristic, sampled_generations)
-    tau, p_value = kendalltau(true_rm_scores, heuristic_scores)
-    return tau, p_value
-
 def evaluate_func(cfg, dataset_name, function_class) -> FunctionClass:
 
     def _get_instances(dataset_name):
-        pass
+        # Load the dataset from Hugging Face
+        dataset = load_dataset(dataset_name, split='train')
+        # Consider only 100 random samples for evaluation
+        dataset = dataset.shuffle(seed=cfg.seed).select(range(100))
+        # Check if the dataset has the required columns
+        if 'responses' not in dataset.column_names or 'rewards_armorm' not in dataset.column_names:
+            raise logging.error(f"Dataset {dataset_name} does not contain the required columns.")
+        # Check if the dataset is empty
+        if len(dataset) == 0:
+            raise logging.error(f"Dataset {dataset_name} is empty.")
+        # Convert the dataset to a list of dictionaries
+        instances = []
+        for i in range(len(dataset)):
+            instance = {
+                'responses': dataset[i]['responses'],
+                'rewards': dataset[i]['rewards_armorm'],
+            }
+            instances.append(instance)
+        return instances
 
     priority_func_str = function_class.function_str
     imports = function_class.imports_str
@@ -91,22 +103,25 @@ def evaluate_func(cfg, dataset_name, function_class) -> FunctionClass:
         function_class.fail.exception = tb_str
         return function_class
     
+    logging.info(f"Function {cfg.function_str_to_extract} imported successfully.")
     instances = _get_instances(dataset_name)
     rewards_heuristic = []
     rewards_rm = []
     for instance in instances:
-        generation = instance['generation']
-        reward = func_from_llm(generation)
-        rewards_heuristic.append(reward)
-        reward_rm = instance['reward']
-        rewards_rm.append(reward_rm)
-    # Calculate the correlation
+        generations = instance['responses']
+        rewards = instance['rewards']
+        for i in range(len(generations)):
+            generation = generations[i]
+            reward_rm = rewards[i]
+            reward_heuristic = func_from_llm(generation)
+            rewards_heuristic.append(reward_heuristic)
+            rewards_rm.append(reward_rm['score'])
+    # Calculate the correlation 
     tau, p_value = kendalltau(rewards_rm, rewards_heuristic)
-    # Calculate the score
-    score = tau
     # Set the score
-    function_class.score = score
-    function_class.true_score = score
+    function_class.score = tau
+    function_class.true_score = tau
+    function_class.p_value = p_value
 
     return function_class
 
@@ -143,7 +158,7 @@ system_prompt = "You are helpful, excellent and innovative problem solver specia
 
 
 TASK_REGISTRY.register(
-    "rlhf",
+    "evorlhf",
     generate_input=generate_input,
     evaluate_func=evaluate_func,
     get_initial_func=get_initial_func,

@@ -1,0 +1,3 @@
+scratch_path: "/iopsstor/scratch/cscs/nevali/ "
+use_tgi: 0
+use_vllm: 1

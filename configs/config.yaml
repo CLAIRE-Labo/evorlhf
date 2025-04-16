@@ -13,10 +13,10 @@ hydra:
     subdir: ${hydra.job.num}
 
 defaults:
-  - cluster: example
-  - task: bin
-  - model: llama32
-  - train: dpo
+  - cluster: cscs
+  - task: evorlhf
+  - model: qwensmall
+  - train: none
   - _self_
 
 # LLM settings
@@ -66,8 +66,8 @@ logs_path: .
 logs_dir: out/logs/${prefix}/${task.task_name}_${run_identifier_name}_${seed}
 
 # Wandb settings
-project: "project_name"
-entity: project_entity
+project: evorlhf
+entity: claire-labo
 
 # Other settings
 seed: 0

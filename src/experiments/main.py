@@ -139,9 +139,10 @@ def main(cfg: DictConfig):
     except ValueError as e:
         raise RuntimeError(
             f"Task '{cfg.task.task_name}' is not registered. Check if it's implemented and registered properly.") from e
-
+    logging.info(f"DEBUGGGGG {cfg}")
     generate_input = task["generate_input"]
     evaluate_func = task["evaluate_func"]
+    logging.info(f"DEBUGGGGG evaluate func {evaluate_func}")
     get_initial_func = task["get_initial_func"]
 
     initial_function, function_str_to_extract = get_initial_func(cfg.task)
