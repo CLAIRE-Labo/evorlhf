@@ -200,6 +200,8 @@ def main(cfg: DictConfig):
             initial_function_str, "import random\nimport numpy as np"
         )
         intial_results = evaluate_func(cfg, copy.deepcopy(input_struct), intial_function_class)
+        logging.info(f'DEBUGGGGGGG initial_results {intial_results}')
+        logging.info(f'DEBUGGGGGGG initial score {intial_results.score}')
         programdatabase.register_program(initial_function_str, intial_results.score, None)
         save_func_class_to_file(cfg, intial_results)
 
@@ -275,6 +277,10 @@ def main(cfg: DictConfig):
         # GENERATE FUNCTIONS
         logging.info("-" * 10)
         logging.info("GENERATING PROMPTS")
+        logging.info(f'DEBUGGG CFG: {cfg}')
+        logging.info(f'DEBUGGG PROGRAMDATABASE: {programdatabase}')
+        logging.info(f'DEBUGGG RUNNING DICT: {running_dict}')
+        logging.info(f'DEBUGGG ROUND NUM: {round_num}')
         (
             chats_batch,
             island_id_prompt_batch,
@@ -581,7 +587,7 @@ def main(cfg: DictConfig):
 
         # Add the chats to the finetuning data
         dpo_chats.add_batch_data(cfg, passed_function_classes, failed_function_classes)
-
+        assert 0
         # Register the sampled functions in the programdatabase
         programdatabase, running_dict, _ = register_programs(
             cfg, running_dict, passed_function_classes, failed_function_classes, programdatabase

@@ -11,7 +11,7 @@ run_or_dev=dev  # Defines whether run from the dev instance or run instance of t
 prefix="evorlhf"  # Prefix for the wandb run name
 cluster=cscs
 
-SWEEP_FILE="configs/sweep/sweep_config_rlhf.csv"
+SWEEP_FILE="configs/sweep/sweep_config_evorlhf.csv"
 
 # ------------------ Load Sweep --------------------------
 if [ ! -f "$SWEEP_FILE" ]; then
@@ -54,10 +54,10 @@ tail -n +2 "$SWEEP_FILE" | while IFS= read -r line || [[ -n "$line" ]]; do
 export PROJECT_ROOT_AT="/users/nevali/projects/evorlhf/dev"
 srun \
   --overlap \
-  --jobid=347489 \
+  --jobid=347950 \
   --container-image="/users/nevali/projects/evorlhf/dev/installation/docker-arm64-cuda/CSCS-Clariden-setup/sphere-packing.sqsh" \
   --environment="/users/nevali/.edf/funrlhf.toml" \
-  --container-mounts="/users/nevali/projects/evorlhf/dev" \
+  --container-mounts="/users/nevali/projects/evorlhf/dev,/iopsstor/scratch/cscs/nevali" \
   --container-workdir=$PROJECT_ROOT_AT \
   --no-container-mount-home \
   --no-container-remap-root \
@@ -65,7 +65,7 @@ srun \
   --container-writable \
   bash -c "\
 export WANDB_API_KEY='0ea1746a263cbc1ddaef0dfdc96f1de5c64bd734'; \
-pip install jax jaxlib jumanji hydra-core && \
+pip install jax jaxlib jumanji hydra-core nltk && \
 cd ${PROJECT_ROOT_AT} && \
 PYTHONPATH=src python src/experiments/main.py ${cli_args}+wandb=1 gpu_nums=0 prefix=${prefix} cluster=${cluster} run_or_dev=${run_or_dev}"
 

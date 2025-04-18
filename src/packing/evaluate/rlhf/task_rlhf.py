@@ -5,7 +5,7 @@ import logging
 import random
 import copy
 import traceback
-from datasets import load_dataset
+from datasets import load_dataset, load_from_disk
 from packing.logging.function_class import FunctionClass
 from scipy.stats import kendalltau
 from packing.evaluate.registry import TASK_REGISTRY
@@ -21,6 +21,9 @@ import scipy.stats
 import scipy.special
 import copy
 '''
+
+# TODO: use the cfg instead of hardcoding the data path
+DATA_PATH = '/iopsstor/scratch/cscs/nevali/projects/evorlhf/data/Magpie-Air-DPO-100K-v0.1'
 
 def get_initial_func(cfg) -> Tuple[Callable, str]:
     # Function to be evolved.
@@ -50,15 +53,13 @@ def generate_input(cfg, set: str) -> str:
         raise ValueError(f"Unknown set: {set}")
 
 
-def get_model_scores(model, generations):
-    """Return a list of scores given a model and a list of generations."""
-    return [model(generation) for generation in generations]
-
 def evaluate_func(cfg, dataset_name, function_class) -> FunctionClass:
 
     def _get_instances(dataset_name):
         # Load the dataset from Hugging Face
-        dataset = load_dataset(dataset_name, split='train')
+        # dataset = load_dataset(dataset_name, split='train')
+        # Load the dataset from scratch folder (I downloaded only the test data):
+        dataset = load_from_disk(DATA_PATH)
         # Consider only 100 random samples for evaluation
         dataset = dataset.shuffle(seed=cfg.seed).select(range(100))
         # Check if the dataset has the required columns
@@ -98,8 +99,8 @@ def evaluate_func(cfg, dataset_name, function_class) -> FunctionClass:
         tb_str = traceback.format_exc()
         function_class.fail_flag = 1
         function_class.fail.reason_imports = 1
-        function_class.score = cfg.failed_score
-        function_class.true_score = cfg.failed_score
+        function_class.score = cfg.task.failed_score
+        function_class.true_score = cfg.task.failed_score
         function_class.fail.exception = tb_str
         return function_class
     
@@ -113,16 +114,42 @@ def evaluate_func(cfg, dataset_name, function_class) -> FunctionClass:
         for i in range(len(generations)):
             generation = generations[i]
             reward_rm = rewards[i]
-            reward_heuristic = func_from_llm(generation)
-            rewards_heuristic.append(reward_heuristic)
+            try:
+                reward_heuristic = func_from_llm(generation)
+                rewards_heuristic.append(reward_heuristic)
+            except Exception as e:
+                logging.info(f"Function {cfg.function_str_to_extract} failed to execute: {e}")
+                tb_str = traceback.format_exc()
+                function_class.fail_flag = 1
+                function_class.score = cfg.task.failed_score
+                function_class.true_score = cfg.task.failed_score
+                function_class.fail.exception = tb_str
+                return function_class
             rewards_rm.append(reward_rm['score'])
-    # Calculate the correlation 
-    tau, p_value = kendalltau(rewards_rm, rewards_heuristic)
-    # Set the score
-    function_class.score = tau
-    function_class.true_score = tau
-    function_class.p_value = p_value
+    # Calculate the correlation
+    try:
+        tau, p_value = kendalltau(rewards_rm, rewards_heuristic)
+        # Set the score
+        if tau is None or p_value is None:
+            logging.info(f'DEBUGGGGG rewards_rm: {rewards_rm}')
+            logging.info(f'DEBUGGGGG rewards_heuristic: {rewards_heuristic}')
+        assert tau is not None, f"Kendall's tau is None"
+        assert p_value is not None, f"Kendall's tau p_value is None"
+        function_class.score = tau
+        function_class.true_score = tau
+        function_class.p_value = p_value
+        function_class.fail_flag = 0
+        function_class.correct_flag = 1
 
+    except Exception as e:
+        logging.info(f"Heuristic is not able to compute Kendall's tau: {rewards_heuristic}, {len(rewards_heuristic)}")
+        tb_str = traceback.format_exc()
+        logging.info(f"DEBUGGGGGG Function {cfg.function_str_to_extract} failed to execute: {e}")
+        function_class.fail_flag = 1
+        function_class.score = cfg.task.failed_score
+        function_class.true_score = cfg.task.failed_score
+        function_class.fail.exception = tb_str
+    
     return function_class
 
 

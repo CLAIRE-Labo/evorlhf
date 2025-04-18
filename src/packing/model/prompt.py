@@ -1,6 +1,7 @@
 import numpy as np
 import wandb
 import copy
+import logging
 
 from packing.evaluate.registry import TASK_REGISTRY
 
@@ -84,6 +85,9 @@ def generate_batch_prompts(cfg, programdatabase, running_dict, round_num):
     running_dict["current_percentile"] = current_percentile
 
     for _ in range(cfg.num_cont_rounds):
+        logging.info(f'DEBUGGGG CFG in prompt: {cfg}')
+        logging.info(f'DEBUGGGG current_percentile: {current_percentile}')
+        logging.info(f'DEBUGGGG programdatabase in prompt: {programdatabase}')
         chat, prompt_scores, island_id_prompt, temperature, probabilities = generate_prompt(
             cfg, programdatabase, current_percentile
         )

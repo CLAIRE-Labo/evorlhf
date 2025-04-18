@@ -6,6 +6,7 @@ import torch
 from itertools import cycle, product
 import copy
 import numpy as np
+import logging
 import wandb
 from datasets import DatasetDict, Dataset
 
@@ -26,7 +27,8 @@ class DPODataBuffer:
         failed_chats = []
         passed_chats = []
         passed_scores = []
-
+        logging.info(f'DEBUGGGGGGG passed_classes_previous: {passed_classes_previous}')
+        logging.info(f'DEBUGGGGGGG failed_classes_previous: {failed_classes_previous}')
         #assert len(passed_classes_previous) + len(failed_classes_previous) == cfg.num_outputs_per_prompt
 
         # Collect failed chats
@@ -42,7 +44,9 @@ class DPODataBuffer:
                 passed_chats.append(passed_class.chat)
                 passed_scores.append(passed_class.score)
                 self.scores_since_finetune.append(passed_class.score)
-
+        logging.info(f'DEBUGGGGGGG passed_chats: {passed_chats}')
+        logging.info(f'DEBUGGGGGGG passed_scores: {passed_scores}')
+        logging.info(f'DEBUGGGGGGG failed_chats: {failed_chats}')
         assert len(passed_chats) == len(passed_scores)
 
         pairs = []
