@@ -587,7 +587,7 @@ def main(cfg: DictConfig):
 
         # Add the chats to the finetuning data
         dpo_chats.add_batch_data(cfg, passed_function_classes, failed_function_classes)
-        assert 0
+
         # Register the sampled functions in the programdatabase
         programdatabase, running_dict, _ = register_programs(
             cfg, running_dict, passed_function_classes, failed_function_classes, programdatabase

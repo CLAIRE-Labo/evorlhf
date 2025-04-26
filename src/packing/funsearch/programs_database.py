@@ -85,7 +85,7 @@ class ProgramsDatabase:
         """Registers `program` in the specified island."""
         if score is None:
             logging.info(
-                f"DEBUGGGG Program {program} has no score. Not registering it in island {island_id}."
+                f"[program_database.py] Program {program} has no score. Not registering it in island {island_id}."
             )
         assert score is not None
         self._islands[island_id].register_program(program, score)
@@ -183,10 +183,13 @@ class Island:
         score,
     ) -> None:
         """Stores a program on this island, in its appropriate cluster."""
+        # Add check for NaN or None score before registration
+        if score is None or np.isnan(score):
+            logging.error(f"[program_databese.py] Attempted to register program with invalid score: {score}. Program hash: {hash(str(program))}. Skipping registration.")
+            # Optionally raise an error instead of just logging and skipping:
+            # raise ValueError(f"Attempted to register program with invalid score: {score}")
+            return # Skip registration if score is invalid
         signature = score
-        logging.info(f'DEBUGGGGGGGGGGGGG score: {score}')
-        logging.info(f'DEBUGGGGGGGGGGGGG program: {program}')
-        logging.info(f'DEBUGGGGGGGGGGGGG program str: {str(program)}')
         assert score is not None
         if signature not in list(self._clusters.keys()):
             self._clusters[signature] = Cluster(score, program)
@@ -196,9 +199,6 @@ class Island:
 
     def get_prompt(self, percentile):
         """Constructs a prompt containing functions from this island."""
-        logging.info(f"DEBUGGGG Island: {self}")
-        logging.info(f"DEBUGGGG Island clusters: {self._clusters}")
-        logging.info(f'DEBUGGGG-- KEYS: {self._clusters.keys()}')
         cluster_scores = np.array(list(self._clusters.keys()))
 
         # At the beginning of an experiment when we have few clusters, place fewer
@@ -242,8 +242,6 @@ class Island:
                 # logging.info("Not enough programs in the top percentile")
                 # logging.info(f"Number of programs in the top percentile: {n_percentile}")
                 # logging.info(f"Number of programs in the island: {len(cluster_scores)}")
-            logging.info(f'DEBUGGGG cluster_scores: {cluster_scores}')
-            logging.info(f'DEBUGGGG TEMP: {self.temp}')
             probabilities = _softmax(cluster_scores, self.temp)
 
             # Add a small constant to ensure no zero probabilities
@@ -307,8 +305,6 @@ class Cluster:
         normalized_lengths = (np.array(self._lengths) - min(self._lengths)) / (
             max(self._lengths) + 1e-6
         )
-        logging.info(f"DEBUGGGGGGGGGGGGG normalized_lengths: {normalized_lengths}")
         probabilities = _softmax(-normalized_lengths, temperature=1.0)
-        logging.info(f"DEBUGGGGGGGGGGGGG probabilities: {probabilities}")
         chosen_idx = np.random.choice(len(self._programs), p=probabilities)
         return self._programs[chosen_idx]

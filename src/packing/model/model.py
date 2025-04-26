@@ -83,8 +83,6 @@ def get_full_model_name(cfg):
             # huggingface-cli download microsoft/Phi-3.5-mini-instruct --local-dir Phi-3.5-mini-instruct
         elif name == "starcoder":
             model_id = "bigcode/starcoder2-15b-instruct-v0.1"
-        elif name == "ArmorRM": # TODO: check if i have to add it?
-            model_id = "RLHFlow/ArmoRM-Llama3-8B-v0.1"
         # elif name == "gemma":
         #     model_id = "google/gemma-7b-it"
         # elif name == "gemma":

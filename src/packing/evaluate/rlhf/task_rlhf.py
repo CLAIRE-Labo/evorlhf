@@ -129,12 +129,16 @@ def evaluate_func(cfg, dataset_name, function_class) -> FunctionClass:
     # Calculate the correlation
     try:
         tau, p_value = kendalltau(rewards_rm, rewards_heuristic)
-        # Set the score
-        if tau is None or p_value is None:
-            logging.info(f'DEBUGGGGG rewards_rm: {rewards_rm}')
-            logging.info(f'DEBUGGGGG rewards_heuristic: {rewards_heuristic}')
-        assert tau is not None, f"Kendall's tau is None"
-        assert p_value is not None, f"Kendall's tau p_value is None"
+        # Check if Kendall's tau calculation resulted in NaN
+        if tau is None or p_value is None or np.isnan(tau) or np.isnan(p_value):
+            logging.warning(f"[task_rlhf.py] Kendall's tau calculation resulted in NaN. tau={tau}, p_value={p_value}")
+            logging.warning(f"[task_rlhf.py] Rewards RM (len {len(rewards_rm)}): {rewards_rm}")
+            logging.warning(f"[task_rlhf.py] Rewards Heuristic (len {len(rewards_heuristic)}): {rewards_heuristic}")
+            function_class.fail_flag = 1
+            function_class.score = cfg.task.failed_score
+            function_class.true_score = cfg.task.failed_score
+            function_class.fail.exception = "Kendall's tau resulted in NaN"
+            return function_class
         function_class.score = tau
         function_class.true_score = tau
         function_class.p_value = p_value
@@ -144,7 +148,7 @@ def evaluate_func(cfg, dataset_name, function_class) -> FunctionClass:
     except Exception as e:
         logging.info(f"Heuristic is not able to compute Kendall's tau: {rewards_heuristic}, {len(rewards_heuristic)}")
         tb_str = traceback.format_exc()
-        logging.info(f"DEBUGGGGGG Function {cfg.function_str_to_extract} failed to execute: {e}")
+        logging.info(f"[task_rlhf.py] Function {cfg.function_str_to_extract} failed to execute: {e}")
         function_class.fail_flag = 1
         function_class.score = cfg.task.failed_score
         function_class.true_score = cfg.task.failed_score

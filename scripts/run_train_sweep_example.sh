@@ -54,7 +54,7 @@ tail -n +2 "$SWEEP_FILE" | while IFS= read -r line || [[ -n "$line" ]]; do
 export PROJECT_ROOT_AT="/users/nevali/projects/evorlhf/dev"
 srun \
   --overlap \
-  --jobid=347950 \
+  --jobid=375208 \
   --container-image="/users/nevali/projects/evorlhf/dev/installation/docker-arm64-cuda/CSCS-Clariden-setup/sphere-packing.sqsh" \
   --environment="/users/nevali/.edf/funrlhf.toml" \
   --container-mounts="/users/nevali/projects/evorlhf/dev,/iopsstor/scratch/cscs/nevali" \
