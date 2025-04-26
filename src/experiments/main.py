@@ -139,10 +139,8 @@ def main(cfg: DictConfig):
     except ValueError as e:
         raise RuntimeError(
             f"Task '{cfg.task.task_name}' is not registered. Check if it's implemented and registered properly.") from e
-    logging.info(f"DEBUGGGGG {cfg}")
     generate_input = task["generate_input"]
     evaluate_func = task["evaluate_func"]
-    logging.info(f"DEBUGGGGG evaluate func {evaluate_func}")
     get_initial_func = task["get_initial_func"]
 
     initial_function, function_str_to_extract = get_initial_func(cfg.task)
@@ -200,8 +198,6 @@ def main(cfg: DictConfig):
             initial_function_str, "import random\nimport numpy as np"
         )
         intial_results = evaluate_func(cfg, copy.deepcopy(input_struct), intial_function_class)
-        logging.info(f'DEBUGGGGGGG initial_results {intial_results}')
-        logging.info(f'DEBUGGGGGGG initial score {intial_results.score}')
         programdatabase.register_program(initial_function_str, intial_results.score, None)
         save_func_class_to_file(cfg, intial_results)
 
@@ -277,10 +273,6 @@ def main(cfg: DictConfig):
         # GENERATE FUNCTIONS
         logging.info("-" * 10)
         logging.info("GENERATING PROMPTS")
-        logging.info(f'DEBUGGG CFG: {cfg}')
-        logging.info(f'DEBUGGG PROGRAMDATABASE: {programdatabase}')
-        logging.info(f'DEBUGGG RUNNING DICT: {running_dict}')
-        logging.info(f'DEBUGGG ROUND NUM: {round_num}')
         (
             chats_batch,
             island_id_prompt_batch,
