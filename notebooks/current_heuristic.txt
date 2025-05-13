@@ -1,0 +1,62 @@
+import re
+from collections import Counter
+import math
+def heuristic_rm(generation: str) -> int:
+    """Returns a heuristic score for a given generation.
+    The score is calculated based on coherence, diversity, semantic appropriateness, and sentiment of the generation.
+    
+    Args:
+        generation (str): Generation to evaluate.
+
+    Returns:
+        int: Score for the generation.
+    """
+    # Normalize the text by removing punctuation and converting to lowercase
+    normalized_text = re.sub(r'[^\w\s]', '', generation.lower())
+    
+    # Split the text into words
+    words = normalized_text.split()
+    
+    # Calculate the average word length
+    if words:
+        avg_word_length = sum(len(word) for word in words) / len(words)
+    else:
+        avg_word_length = 0
+    
+    # Calculate the diversity of tokens
+    tokens = normalized_text.split()
+    token_counts = Counter(tokens)
+    diversity = math.log(len(token_counts) + 1)
+    
+    # Penalize short or fragmented responses
+    coherence_score = max(0, 10 - len(words))
+    
+    # Semantic appropriateness score: penalize responses that are not coherent or relevant
+    semantic_score = 0
+    if "answer" in generation.lower():
+        semantic_score += 2
+    if "correct" in generation.lower():
+        semantic_score += 2
+    if "wrong" in generation.lower():
+        semantic_score -= 2
+    
+    # Sentiment score: encourage positive responses
+    sentiment_score = 0
+    if "great" in generation.lower():
+        sentiment_score += 3
+    if "excellent" in generation.lower():
+        sentiment_score += 4
+    if "amazing" in generation.lower():
+        sentiment_score += 5
+    if "perfect" in generation.lower():
+        sentiment_score += 6
+    if "fantastic" in generation.lower():
+        sentiment_score += 7
+    
+    # Combine the scores using a weighted sum
+    # Weights are chosen to balance the importance of each factor
+    weights = [0.25, 0.25, 0.25, 0.25]  # Example weights
+    score = sum(weight * factor for weight, factor in zip(weights, [avg_word_length, diversity, coherence_score, semantic_score]))
+    
+    # Return the score as an integer
+    return round(score)

@@ -54,8 +54,8 @@ tail -n +2 "$SWEEP_FILE" | while IFS= read -r line || [[ -n "$line" ]]; do
 export PROJECT_ROOT_AT="/users/nevali/projects/evorlhf/dev"
 srun \
   --overlap \
-  --jobid=375208 \
-  --container-image="/users/nevali/projects/evorlhf/dev/installation/docker-arm64-cuda/CSCS-Clariden-setup/sphere-packing.sqsh" \
+  --jobid=401708 \
+  --container-image="/iopsstor/scratch/cscs/nevali/projects/evorlhf/images/sphere-packing.sqsh" \
   --environment="/users/nevali/.edf/funrlhf.toml" \
   --container-mounts="/users/nevali/projects/evorlhf/dev,/iopsstor/scratch/cscs/nevali" \
   --container-workdir=$PROJECT_ROOT_AT \
@@ -65,11 +65,16 @@ srun \
   --container-writable \
   bash -c "\
 export WANDB_API_KEY='0ea1746a263cbc1ddaef0dfdc96f1de5c64bd734'; \
+export HF_HOME='/iopsstor/scratch/cscs/nevali/.cache/huggingface'; \
 pip install jax jaxlib jumanji hydra-core nltk && \
 cd ${PROJECT_ROOT_AT} && \
 PYTHONPATH=src python src/experiments/main.py ${cli_args}+wandb=1 gpu_nums=0 prefix=${prefix} cluster=${cluster} run_or_dev=${run_or_dev}"
 
-
 done < <(tail -n +2 "$SWEEP_FILE")
 
 echo "All jobs submitted!"
+
+# PYTHONPATH=src python src/experiments/debug_oom.py ${cli_args}+wandb=1 gpu_nums=0 prefix=${prefix} cluster=${cluster} run_or_dev=${run_or_dev}"
+# PYTHONPATH=src python src/experiments/main.py ${cli_args}+wandb=1 gpu_nums=0 prefix=${prefix} cluster=${cluster} run_or_dev=${run_or_dev}"
+# load the dataset beoforehand to avoid mutlithreads conflicts.
+# check how to flush logs and do it

@@ -158,7 +158,7 @@ def evaluate_func(cfg, dataset_name, function_class) -> FunctionClass:
 
 
 append_prompt = """
-You are tasked with discovering a new function, heuristic_reward(), that closely approximates the behavior of the learned reward model while being significantly simpler and more interpretable.
+You are tasked with discovering a new function, heuristic_reward(), that closely approximates the behavior of the learned reward model of a language model that takes text as input and generates text as output, while being significantly simpler and more interpretable.
 
 To achieve this, follow these guidelines:
 
