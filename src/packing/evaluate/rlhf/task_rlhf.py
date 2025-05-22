@@ -25,6 +25,12 @@ import copy
 # TODO: use the cfg instead of hardcoding the data path
 DATA_PATH = '/iopsstor/scratch/cscs/nevali/projects/evorlhf/data/Magpie-Air-DPO-100K-v0.1'
 
+
+# Load the dataset from Hugging Face
+# dataset = load_dataset(dataset_name, split='train')
+# Load the dataset from scratch folder (I downloaded only the test data):
+DATASET = load_from_disk(DATA_PATH)
+
 def get_initial_func(cfg) -> Tuple[Callable, str]:
     # Function to be evolved.
     def heuristic_rm(generation: str) -> int:
@@ -54,14 +60,11 @@ def generate_input(cfg, set: str) -> str:
 
 
 def evaluate_func(cfg, dataset_name, function_class) -> FunctionClass:
+    global DATASET
 
     def _get_instances(dataset_name):
-        # Load the dataset from Hugging Face
-        # dataset = load_dataset(dataset_name, split='train')
-        # Load the dataset from scratch folder (I downloaded only the test data):
-        dataset = load_from_disk(DATA_PATH)
         # Consider only 100 random samples for evaluation
-        dataset = dataset.shuffle(seed=cfg.seed).select(range(100))
+        dataset = DATASET.shuffle(seed=cfg.seed).select(range(100))
         # Check if the dataset has the required columns
         if 'responses' not in dataset.column_names or 'rewards_armorm' not in dataset.column_names:
             raise logging.error(f"Dataset {dataset_name} does not contain the required columns.")
@@ -171,18 +174,21 @@ To achieve this, follow these guidelines:
    - The performance of your heuristic will be evaluated based on how well it minimizes the expected difference from the true reward model across a variety of inputs.
 
 3. Prioritize Simplicity and Interpretability
-   - Avoid overfitting to small variations—aim for a general rule that explains most of the reward function’s behavior.  
+   - Avoid overfitting to small variations—aim for a general rule that explains most of the reward function's behavior.  
    - Prefer human-readable mathematical expressions with fewer terms and operations.  
 
-4. Think Creatively
-   - Do not simply copy or rephrase parts of the learned reward model.  
-   - Look for underlying patterns or principles that define the reward function and express them in a simpler form.
+4. Think Outside the Box:
+    - Avoid simply rewriting or rephrasing existing approaches.
+    - Prioritize creating novel solutions rather than making superficial tweaks.
 
-5. Experiment and Improve
-   - Analyze past attempts: what features contributed most to performance?  
-   - Try new variations and optimizations that improve accuracy while keeping the heuristic simple.  
-   - Your goal is to iteratively refine heuristic_reward() until it consistently achieves high alignment with the true reward model.
+5. Analyze the Score Drivers:
+    - Analyze the characteristics of the higher-scoring function.
+    - Identify what it is doing differently or more effectively than the lower-scoring function. 
+    - Determine which specific changes or techniques lead to better performance.
 
+6. Experiment with Variations:
+    - Use the insights to create a new function that builds upon successful ideas but introduces innovative variations.
+    - Consider entirely new strategies or optimizations that were not present in the previous attempts.
 To summarize, your task is to write a new function named heuristic_reward() that approximates the learned reward model with minimal complexity while maintaining high accuracy. Your success will be measured by how well it generalizes across different inputs while remaining interpretable.
 """
 system_prompt = "You are helpful, excellent and innovative problem solver specializing in mathematical optimization and algorithm design. You are an expert in writing Python functions."

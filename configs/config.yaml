@@ -15,7 +15,7 @@ hydra:
 defaults:
   - cluster: cscs
   - task: evorlhf
-  - model: qwensmall
+  - model: codestral
   - train: none
   - _self_
 

@@ -1,2 +1,2 @@
 seed|train|model|task|num_rounds|project
-0|none|qwensmall|evorlhf|11001|evorlhf
+0|none|codestral|evorlhf|20000|evorlhf

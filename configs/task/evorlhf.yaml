@@ -6,7 +6,7 @@ train_perturbed_set_path: "data/train_perturbed_rlhf.json"
 test_set_path: "data/test_rlhf.json"
 init_equal: 1
 
-failed_score: -20000
+failed_score: 0
 timeout_period: 60
 mem_limit_gb: 10
 
